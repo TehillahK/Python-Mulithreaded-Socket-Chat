@@ -9,9 +9,19 @@ class Server:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.rooms = Rooms()
 
-    def get_chat_names(self):
-        pass
-        
+    def convert_to_json(self,data):
+        return json.dumps(data)
+
+    def convert_to_dict(self,data):
+        return json.loads(data)
+
+    def get_room_names(self):
+        return self.rooms.get_rooms()
+
+    def handle_req(self,req,conn):
+        command = self.convert_to_dict(req)
+        if command["type"] == "join-netork":
+            return self.get_room_names()
 
 
     def start(self): 
@@ -24,7 +34,7 @@ class Server:
             data = conn.recv(1024)
             if data:
                 print(data)
-                conn.sendall(json.dumps(self.rooms.get_rooms()).encode())
+                conn.sendall(self.convert_to_json(self.handle_req(data,conn)).encode())
 
 
 
