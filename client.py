@@ -21,7 +21,7 @@ class Client:
         print("Available chat rooms")
         count = 0
         for room in self.rooms:
-            print(f"Room Number: {count}\nRoom Name:  {room}\n")
+            print(f"Room:{count} --- {room}\n")
 
     def join_room(self):
         print("pick a room to join")
@@ -34,6 +34,11 @@ class Client:
         })
         return result
         
+    def handle_req(self,data):
+        command =  self.convert_to_dict(data)
+        if command["type"] == "join-network-reply":
+            self.rooms = command["message"]
+            self.show_rooms()    
 
     def start(self):
         HOST = "127.0.0.1"  # The server's hostname or IP address
@@ -46,8 +51,8 @@ class Client:
             while True:
                 data = s.recv(1024)
                 if data:
-                    self.rooms = self.convert_to_dict(data)
-                    self.show_rooms()                    
+                    self.handle_req(data)
+                                   
 
 client = Client()
 client.start()

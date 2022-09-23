@@ -14,6 +14,16 @@ class Server:
 
     def convert_to_dict(self,data):
         return json.loads(data)
+    
+    def make_message(self,type,name,message):
+        result = self.convert_to_json( {
+            "type":type,
+            "name": name,
+            "message":message
+        })
+        return result
+        
+
 
     def get_room_names(self):
         return self.rooms.get_rooms()
@@ -21,7 +31,10 @@ class Server:
     def handle_req(self,req,conn):
         command = self.convert_to_dict(req)
         if command["type"] == "join-netork":
-            return self.get_room_names()
+            return self.make_message("join-network-reply","Tehillah",self.get_room_names())
+        elif command["type"] == "create-room":
+            self.rooms.add_room(command["message"])
+            return self.make_message("create-room-reply","Tehillah","success")
 
 
     def start(self): 
@@ -34,7 +47,7 @@ class Server:
             data = conn.recv(1024)
             if data:
                 print(data)
-                conn.sendall(self.convert_to_json(self.handle_req(data,conn)).encode())
+                conn.sendall(self.handle_req(data,conn).encode())
 
 
 
