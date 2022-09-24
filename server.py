@@ -1,7 +1,8 @@
-
+import threading
 import socket
 import json
 from room import Rooms
+
 class Server:
     def __init__(self,port=3000):
         self._port = port
@@ -36,6 +37,12 @@ class Server:
             self.rooms.add_room(command["message"])
             return self.make_message("create-room-reply","Tehillah","success")
 
+    def threading_func(self,conn):
+         data = conn.recv(1024)
+         if data:
+            print(data)
+            conn.sendall(self.handle_req(data,conn).encode())
+
 
     def start(self): 
         self.socket.bind((self._host,self._port))
@@ -44,10 +51,9 @@ class Server:
             print("server has started")
             conn,addr = self.socket.accept()
             print(f"connected ${conn}")
-            data = conn.recv(1024)
-            if data:
-                print(data)
-                conn.sendall(self.handle_req(data,conn).encode())
+            new_thread = threading.Thread(target=self.threading_func,args=(conn,))
+            new_thread.start()
+            
 
 
 
