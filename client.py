@@ -1,11 +1,14 @@
 
 import socket
 import json
+import os
 
 class Client:
 
     def __init__(self):
         self.rooms = []
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.room = ""
 
     def convert_to_dict(self , data):
         result = json.loads(data)
@@ -22,7 +25,18 @@ class Client:
             print(f"Room:{count} --- {room}\n")
 
     def join_room(self):
-        print("pick a room to join")
+        HOST = "127.0.0.1"  # The server's hostname or IP address
+        PORT = 3000  # The port used by the server
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            join_msg = self.make_message("join-room","Tehillah","1")
+            s.sendall(join_msg.encode())
+            while True:
+                data = s.recv(1024)
+                print(data)
+                self.handle_req(data)
+        
 
     def make_message(self,type,name,message):
         result = self.convert_to_json( {
@@ -37,8 +51,12 @@ class Client:
         if command["type"] == "join-network-reply":
             self.rooms = command["message"]
             self.show_rooms()    
+            self.join_room()
+        elif command["type"] == "join-room-reply":
+            os.system('clear')
+            print("welcom to room ")
 
-    def start(self):
+    def join_network(self):
         HOST = "127.0.0.1"  # The server's hostname or IP address
         PORT = 3000  # The port used by the server
 
@@ -46,10 +64,11 @@ class Client:
             s.connect((HOST, PORT))
             join_msg = self.make_message("join-netork","Tehillah","")
             s.sendall(join_msg.encode())
-            while True:
-                data = s.recv(1024)
-                if data:
-                    self.handle_req(data)
+            s.close()
+
+    def start(self):
+        self.join_network()
+        self.join_room()
                                    
 
 client = Client()

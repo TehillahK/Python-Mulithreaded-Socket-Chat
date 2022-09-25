@@ -31,28 +31,39 @@ class Server:
 
     def handle_req(self,req,conn):
         command = self.convert_to_dict(req)
+        print(command)
         if command["type"] == "join-netork":
             return self.make_message("join-network-reply","Tehillah",self.get_room_names())
         elif command["type"] == "create-room":
             self.rooms.add_room(command["message"])
             return self.make_message("create-room-reply","Tehillah","success")
+        elif command["type"] == "join-room":
+            print("joined room")
+            return self.make_message("join-room-reply", "Tehillah", "success")
 
     def threading_func(self,conn):
-         data = conn.recv(1024)
-         if data:
+    #    threading.Lock().acquire()
+        data = conn.recv(1024)
+        if data:
             print(data)
             conn.sendall(self.handle_req(data,conn).encode())
+       # threading.Lock().locked()
 
 
     def start(self): 
         self.socket.bind((self._host,self._port))
-        self.socket.listen()
+        self.socket.listen(5)
+        
         while True:
-            print("server has started")
-            conn,addr = self.socket.accept()
-            print(f"connected ${conn}")
-            new_thread = threading.Thread(target=self.threading_func,args=(conn,))
-            new_thread.start()
+            try:
+                print("server has started")
+                conn,addr = self.socket.accept()
+                print(f"connected ${conn}")
+                new_thread = threading.Thread(target=self.threading_func,args=(conn,))
+                new_thread.start()
+            except socket.timeout:
+                pass
+
             
 
 
