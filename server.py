@@ -24,6 +24,10 @@ class Server:
         })
         return result
         
+    def broadcast_to_room(self,name,message):
+        room = self.rooms.get_room(name)
+        for member in room:
+            member.sendall(message)
 
 
     def get_room_names(self):
@@ -35,19 +39,21 @@ class Server:
         if command["type"] == "join-netork":
             return self.make_message("join-network-reply","Tehillah",self.get_room_names())
         elif command["type"] == "create-room":
-            self.rooms.add_room(command["message"])
+            
             return self.make_message("create-room-reply","Tehillah","success")
         elif command["type"] == "join-room":
             print("joined room")
+            room = command["message"]
+            self.rooms.add_room_member(room,conn)
             return self.make_message("join-room-reply", "Tehillah", "success")
 
     def threading_func(self,conn):
-    #    threading.Lock().acquire()
+        threading.Lock().acquire()
         data = conn.recv(1024)
         if data:
             print(data)
             conn.sendall(self.handle_req(data,conn).encode())
-       # threading.Lock().locked()
+        threading.Lock().locked()
 
 
     def start(self): 

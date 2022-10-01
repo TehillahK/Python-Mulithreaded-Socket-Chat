@@ -5,8 +5,12 @@ class Rooms:
             "movies":[]
         }
 
-    def add_room(self,room_name):
-        self.rooms[room_name] = []
+    def add_room_member(self,room_name,sock):
+        self.rooms[room_name].append(sock)
+        print(self.rooms[room_name])
 
     def get_rooms(self):
         return list(self.rooms.keys())
+
+    def get_room(self,room_name):
+        return self.rooms[room_name]

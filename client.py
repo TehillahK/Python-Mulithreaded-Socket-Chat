@@ -30,12 +30,23 @@ class Client:
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
-            join_msg = self.make_message("join-room","Tehillah","1")
+            join_msg = self.make_message("join-room","Tehillah","movies")
             s.sendall(join_msg.encode())
+            
             while True:
                 data = s.recv(1024)
+                
                 print(data)
                 self.handle_req(data)
+
+    def make_room_message(self,user_name,room_name,message):
+        result = self.convert_to_json({
+            "type": "room-message",
+            "room":room_name,
+            "name": user_name,
+            "message": message
+        })
+        return result
         
 
     def make_message(self,type,name,message):
