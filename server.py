@@ -44,8 +44,15 @@ class Server:
         elif command["type"] == "join-room":
             print("joined room")
             room = command["message"]
-            self.rooms.add_room_member(room,conn)
-            return self.make_message("join-room-reply", "Tehillah", "success")
+            name  = command["name"]
+            isSpace = self.rooms.add_room_member(room,name,conn)
+            if isSpace:
+                msg = self.make_message(
+                    "join-room-reply", "Tehillah", "success")
+            else:
+                msg = self.make_message(
+                    "join-room-reply", "Tehillah", "failed")
+            return msg
 
     def threading_func(self,conn):
         threading.Lock().acquire()
@@ -78,5 +85,7 @@ def main():
     server = Server()
     server.start()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
+    main()
     main()

@@ -2,6 +2,7 @@
 import socket
 import json
 import os
+import sys
 
 class Client:
 
@@ -63,9 +64,11 @@ class Client:
             self.rooms = command["message"]
             self.show_rooms()    
             self.join_room()
-        elif command["type"] == "join-room-reply":
+        elif command["type"] == "join-room-reply" and command["message"] == "success":
             os.system('clear')
             print("welcom to room ")
+        elif command["type"] == "join-room-reply" and command["message"] == "success":
+            print("failed to join room because room is full")
 
     def join_network(self):
         HOST = "127.0.0.1"  # The server's hostname or IP address
@@ -82,6 +85,13 @@ class Client:
         self.join_room()
                                    
 
-client = Client()
-client.start()
-    
+
+
+def main():
+    client = Client()
+    client.start()
+
+
+
+if __name__ == "__main__":
+    main()
