@@ -27,7 +27,7 @@ class Server:
     def broadcast_to_room(self,name,message):
         room = self.rooms.get_room(name)
         for member in room:
-            member.sendall(message)
+            member.sock.sendall(message)
 
 
     def get_room_names(self):
@@ -48,11 +48,17 @@ class Server:
             isSpace = self.rooms.add_room_member(room,name,conn)
             if isSpace:
                 msg = self.make_message(
-                    "join-room-reply", "Tehillah", "success")
+                    "join-room-reply", "server", "success")
             else:
                 msg = self.make_message(
-                    "join-room-reply", "Tehillah", "failed")
+                    "join-room-reply", "server", "failed")
             return msg
+        elif command["type"] == "room-message":
+            print(command)
+            room_name = command["room"]
+            self.broadcast_to_room(name = room_name, message = req)
+            return  self.make_message("room-message-reply","server","success")
+
 
     def threading_func(self,conn):
         threading.Lock().acquire()
