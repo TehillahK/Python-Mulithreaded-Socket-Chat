@@ -1,7 +1,16 @@
-
+#
+#********************************************************************************
+#   client.py
+#   Tehillah Kangamba 7859367
+#   Comp4300
+#   Assignment 1
+#   This is tcp client of a messaging protocal
+#********************************************************************************
+#
 import socket
 import json
 import os
+import select
 import sys
 
 
@@ -21,11 +30,14 @@ class Client:
         result = json.dumps(data)
         return result
 
+    def get_user_input(self):
+        return input("enter data")
+
     def send_room_message(self,msg):
         HOST = "127.0.0.1"  # The server's hostname or IP address
         PORT = 3000  # The port used by the server
 
-        msg = self.make_room_message(self.screen_name,"movies","yo")
+        msg = self.make_room_message(self.screen_name,"movies",msg)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
             s.sendall(msg.encode())
@@ -46,11 +58,25 @@ class Client:
             s.connect((HOST, PORT))
             join_msg = self.make_message("join-room",self.screen_name,"movies")
             s.sendall(join_msg.encode())
-            self.send_room_message("")
+            #self.send_room_message("")
             while True:
-                data = s.recv(1024)
-                if data:
-                    self.handle_req(data)
+                inputs = [sys.stdin, s]
+                readable, writable, exceptional = select.select(inputs,[],[])
+                for source in readable:
+                    if source == s:
+                        data = s.recv(1024)
+                        if data:
+                            self.handle_req(data)
+                    else:
+                        #print('sending >>>>>',end="")
+                        message = sys.stdin.readline()
+                        print('sending >>>>>', end="")
+                        self.send_room_message(message)
+                
+            ##    new_thread = threading.Thread(
+            ##         target=self.threading_func, args=(s,))
+            ##    new_thread.start()
+                
            
             
 
@@ -86,7 +112,8 @@ class Client:
         elif command["type"] == "room-message":
             user_name = command["name"]
             user_msg = command["message"]
-            print(f"{user_name} : {user_msg}")
+            if user_msg != self.screen_name:
+                print(f"{user_name} : {user_msg}")
 
     def join_network(self):
         HOST = "127.0.0.1"  # The server's hostname or IP address
@@ -97,6 +124,17 @@ class Client:
             join_msg = self.make_message("join-netork",self.screen_name,"")
             s.sendall(join_msg.encode())
             s.close()
+
+    def threading_func(self, conn):
+        ##threading.Lock().acquire()
+        data = conn.recv(1024)
+        if data:
+            print(data)
+        ##    conn.sendall(self.handle_req(data, conn).encode())
+            self.handle_req(data)
+            
+       ## threading.Lock().locked()
+
 
     def start(self):
         self.join_network()
