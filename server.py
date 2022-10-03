@@ -16,11 +16,13 @@ class Server:
     def convert_to_dict(self,data):
         return json.loads(data)
     
-    def make_message(self,type,name,message):
+    def make_message(self,type,name,message,status="success",members = None):
         result = self.convert_to_json( {
             "type":type,
             "name": name,
-            "message":message
+            "message":message,
+            "members":members,
+            "status":status
         })
         return result
         
@@ -37,7 +39,7 @@ class Server:
         command = self.convert_to_dict(req)
         print(command)
         if command["type"] == "join-netork":
-            return self.make_message("join-network-reply","Tehillah",self.get_room_names())
+            return self.make_message("join-network-reply","Tehillah",self.rooms.get_rooms())
         elif command["type"] == "create-room":
             
             return self.make_message("create-room-reply","Tehillah","success")
@@ -48,10 +50,10 @@ class Server:
             isSpace = self.rooms.add_room_member(room,name,conn)
             if isSpace:
                 msg = self.make_message(
-                    "join-room-reply", "server", "success")
+                    "join-room-reply", "server", self.rooms.get_members(room),members = self.rooms.get_members(room))
             else:
                 msg = self.make_message(
-                    "join-room-reply", "server", "failed")
+                    "join-room-reply", "server", "failed",status="failed")
             return msg
         elif command["type"] == "room-message":
             print(command)
@@ -82,6 +84,12 @@ class Server:
                 new_thread.start()
             except socket.timeout:
                 pass
+            except KeyboardInterrupt:
+                self.socket.close()
+            except Exception as e:
+                print("failed for some reason")
+                pass
+
 
             
 

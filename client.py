@@ -30,14 +30,14 @@ class Client:
         result = json.dumps(data)
         return result
 
-    def get_user_input(self):
-        return input("enter data")
+    def get_user_input(self,prompt):
+        return input(prompt)
 
     def send_room_message(self,msg):
         HOST = "127.0.0.1"  # The server's hostname or IP address
         PORT = 3000  # The port used by the server
 
-        msg = self.make_room_message(self.screen_name,"movies",msg)
+        msg = self.make_room_message(self.screen_name,self.room,msg)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
             s.sendall(msg.encode())
@@ -50,7 +50,7 @@ class Client:
             print(f"Room:{count} --- {room}\n")
 
 
-    def join_room(self):
+    def join_room(self ):
         HOST = "127.0.0.1"  # The server's hostname or IP address
         PORT = 3000  # The port used by the server
 
@@ -68,14 +68,15 @@ class Client:
                         if data:
                             self.handle_req(data)
                     else:
-                        #print('sending >>>>>',end="")
+                        print('sending >>>>>',end="")
+                        
                         message = sys.stdin.readline()
-                        print('sending >>>>>', end="")
+                        
                         self.send_room_message(message)
-                
-            ##    new_thread = threading.Thread(
-            ##         target=self.threading_func, args=(s,))
-            ##    new_thread.start()
+                        print(f"You : {message}")
+                        
+        
+               
                 
            
             
@@ -102,17 +103,24 @@ class Client:
         command =  self.convert_to_dict(data)
         if command["type"] == "join-network-reply":
             self.rooms = command["message"]
-            self.show_rooms()    
-            self.join_room()
-        elif command["type"] == "join-room-reply" and command["message"] == "success":
+            #print(self.rooms)
+    #        self.show_rooms()    
+        #    print(command)
+           # self.join_room()
+        elif command["type"] == "join-room-reply" and command["status"] == "success":
             os.system('clear')
-            print("welcom to room ")
-        elif command["type"] == "join-room-reply" and command["message"] == "success":
+            members = command["members"]
+            member_count = len(members)
+            print(f"Welcome to {self.room} room.")
+            print(f"Members in chat: {members}")
+            print(f"Member Count: {member_count}")
+        elif command["type"] == "join-room-reply" and command["status"] == "failed":
             print("failed to join room because room is full")
         elif command["type"] == "room-message":
             user_name = command["name"]
             user_msg = command["message"]
-            if user_msg != self.screen_name:
+            if user_name != self.screen_name:
+                print("here")
                 print(f"{user_name} : {user_msg}")
 
     def join_network(self):
@@ -123,6 +131,8 @@ class Client:
             s.connect((HOST, PORT))
             join_msg = self.make_message("join-netork",self.screen_name,"")
             s.sendall(join_msg.encode())
+            data = s.recv(1024)
+            self.handle_req(data)
             s.close()
 
     def threading_func(self, conn):
@@ -138,6 +148,12 @@ class Client:
 
     def start(self):
         self.join_network()
+        self.show_rooms()
+        room_number = self.get_user_input("Select room number:")
+        room_number = int(room_number)
+        self.room = self.rooms[room_number]
+       # print(self.room)
+        
         self.join_room()
                                    
 
