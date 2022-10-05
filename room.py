@@ -10,6 +10,9 @@ class Rooms:
             "movies":[]
         }
 
+    def add_room(self,name):
+        self.rooms[name]=[]
+
     #   add_room_member
     #   returns false if room is full i.e room > 5
     def add_room_member(self,room_name,user_name,sock):

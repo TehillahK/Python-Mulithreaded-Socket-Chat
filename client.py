@@ -7,6 +7,7 @@
 #   This is tcp client of a messaging protocal
 #********************************************************************************
 #
+from curses.ascii import isdigit
 import socket
 import json
 import os
@@ -33,6 +34,24 @@ class Client:
     def get_user_input(self,prompt):
         return input(prompt)
 
+    def send_message(self,type,name,msg):
+        HOST = "127.0.0.1"  # The server's hostname or IP address
+        PORT = 3000  # The port used by the server
+        message = self.convert_to_json({
+            "type":type,
+            "name":name,
+            "message":msg
+        })
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(15)
+            s.connect((HOST, PORT))
+            s.sendall(message.encode())
+            data = s.recv(1024)
+            print(data)
+            s.close()
+
+
+
     def send_room_message(self,msg):
         HOST = "127.0.0.1"  # The server's hostname or IP address
         PORT = 3000  # The port used by the server
@@ -43,11 +62,16 @@ class Client:
             s.sendall(msg.encode())
             s.close()
 
+        
+
     def show_rooms(self):
+        print("Enter room number to join a room or enter c to create room")
         print("Available chat rooms")
         count = 0
         for room in self.rooms:
             print(f"Room:{count} --- {room}\n")
+            count = count + 1
+            
 
 
     def join_room(self ):
@@ -77,9 +101,6 @@ class Client:
                         
         
                
-                
-           
-            
 
     def make_room_message(self,user_name,room_name,message):
         result = self.convert_to_json({
@@ -134,6 +155,9 @@ class Client:
             data = s.recv(1024)
             self.handle_req(data)
             s.close()
+    def create_room(self):
+        return input("Enter room name")
+
 
     def threading_func(self, conn):
         ##threading.Lock().acquire()
@@ -150,11 +174,17 @@ class Client:
         self.join_network()
         self.show_rooms()
         room_number = self.get_user_input("Select room number:")
-        room_number = int(room_number)
-        self.room = self.rooms[room_number]
-       # print(self.room)
-        
-        self.join_room()
+        if room_number.isdigit():
+            room_number = int(room_number)
+            self.room = self.rooms[room_number]
+            self.join_room()
+        elif not room_number.isdigit() and room_number == "c":
+            print("create a room,press enter after putting i name")
+            room_name = self.get_user_input("Name:")
+           # self.make_message("create-room",self.screen_name,room_name)
+            self.send_message(type = "create-room", name = self.screen_name, msg = room_name)
+            self.start()
+
                                    
 
 

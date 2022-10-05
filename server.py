@@ -1,3 +1,13 @@
+#
+#********************************************************************************
+#   server.py
+#   Tehillah Kangamba 7859367
+#   Comp4300
+#   Assignment 1
+#   This is tcp server for chat app
+#********************************************************************************
+#
+
 import threading
 import socket
 import json
@@ -41,7 +51,7 @@ class Server:
         if command["type"] == "join-netork":
             return self.make_message("join-network-reply","Tehillah",self.rooms.get_rooms())
         elif command["type"] == "create-room":
-            
+            self.rooms.add_room(command["message"])
             return self.make_message("create-room-reply","Tehillah","success")
         elif command["type"] == "join-room":
             print("joined room")
@@ -101,5 +111,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
     main()
