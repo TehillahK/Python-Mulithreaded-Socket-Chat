@@ -7,7 +7,8 @@
 #   This is tcp client of a messaging protocal
 #********************************************************************************
 #
-from curses.ascii import isdigit
+
+from doctest import FAIL_FAST
 import socket
 import json
 import os
@@ -77,13 +78,13 @@ class Client:
     def join_room(self ):
         HOST = "127.0.0.1"  # The server's hostname or IP address
         PORT = 3000  # The port used by the server
-
+        leave = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
             join_msg = self.make_message("join-room",self.screen_name,"movies")
             s.sendall(join_msg.encode())
             #self.send_room_message("")
-            while True:
+            while not leave:
                 inputs = [sys.stdin, s]
                 readable, writable, exceptional = select.select(inputs,[],[])
                 for source in readable:
@@ -95,9 +96,13 @@ class Client:
                         print('sending >>>>>',end="")
                         
                         message = sys.stdin.readline()
-                        
-                        self.send_room_message(message)
-                        print(f"You : {message}")
+                        if message == "#\n":
+                            print("leaving room")
+                            self.send_message("leave-room",self.screen_name,self.room)
+                            leave = True
+                        else:
+                            self.send_room_message(message)
+                            print(f"You : {message}")
                         
         
                
@@ -157,17 +162,6 @@ class Client:
             s.close()
     def create_room(self):
         return input("Enter room name")
-
-
-    def threading_func(self, conn):
-        ##threading.Lock().acquire()
-        data = conn.recv(1024)
-        if data:
-            print(data)
-        ##    conn.sendall(self.handle_req(data, conn).encode())
-            self.handle_req(data)
-            
-       ## threading.Lock().locked()
 
 
     def start(self):

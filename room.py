@@ -1,3 +1,16 @@
+#
+#********************************************************************************
+#   room.py
+#   Tehillah Kangamba 7859367
+#   Comp4300
+#   Assignment 1
+#   collection of rooms in chat and its members
+#********************************************************************************
+#
+from os import remove
+from re import M
+
+
 class Member:
     def __init__(self,name,sock) :
         self.name = name
@@ -35,10 +48,17 @@ class Rooms:
             result.append(member.name)
         return result
 
-
-
     def num_members(self,key):
         return len(self.rooms[key])
 
     def get_room(self,room_name):
         return self.rooms[room_name]
+
+    def remove_member(self,room,name):
+        result = False
+        for member in self.rooms[room]:
+            if member.name == name:
+                self.rooms[room].remove(member)
+                print(self.rooms)
+                result = True
+        return result
