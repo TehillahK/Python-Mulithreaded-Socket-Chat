@@ -64,6 +64,8 @@ class Server:
             if isSpace:
                 msg = self.make_message(
                     "join-room-reply", "server", self.rooms.get_members(room),members = self.rooms.get_members(room))
+                    
+               # self.broadcast_to_room(room,self.make_message("join-room",name,message=f"{name} has joined rom").encode())
             else:
                 msg = self.make_message(
                     "join-room-reply", "server", "failed",status="failed")
@@ -82,6 +84,13 @@ class Server:
                 return self.make_message("leave-room-reply","server", "success")
             else:
                 return self.make_message("leave-room-reply","server","failed")
+        elif command["type"] == "stats":
+           room = command["message"]
+           name = command["name"]
+           print(f"{name} wants to see stats")
+           return self.make_message(
+               "stats-reply", "server", self.rooms.get_members(room), members=self.rooms.get_members(room))
+
 
     def threading_func(self,conn):
         threading.Lock().acquire()

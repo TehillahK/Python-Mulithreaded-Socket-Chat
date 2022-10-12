@@ -15,6 +15,9 @@ class Member:
     def __init__(self,name,sock) :
         self.name = name
         self.sock = sock
+
+    def __repr__(self):
+        return f"{self.name}"
         
 
 class Rooms:
@@ -59,6 +62,6 @@ class Rooms:
         for member in self.rooms[room]:
             if member.name == name:
                 self.rooms[room].remove(member)
-                print(self.rooms)
+                #print(self.rooms)
                 result = True
         return result

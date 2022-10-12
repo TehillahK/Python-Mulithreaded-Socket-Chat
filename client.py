@@ -48,7 +48,8 @@ class Client:
             s.connect((HOST, PORT))
             s.sendall(message.encode())
             data = s.recv(1024)
-            print(data)
+            if data:
+                self.handle_req(data)
             s.close()
 
 
@@ -59,6 +60,7 @@ class Client:
 
         msg = self.make_room_message(self.screen_name,self.room,msg)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(5)
             s.connect((HOST, PORT))
             s.sendall(msg.encode())
             s.close()
@@ -83,6 +85,7 @@ class Client:
             s.connect((HOST, PORT))
             join_msg = self.make_message("join-room",self.screen_name,"movies")
             s.sendall(join_msg.encode())
+            s.setblocking(False)
             #self.send_room_message("")
             while not leave:
                 inputs = [sys.stdin, s]
@@ -93,13 +96,16 @@ class Client:
                         if data:
                             self.handle_req(data)
                     else:
-                        print('sending >>>>>',end="")
+                       # print('sending >>>>>',end="")
                         
                         message = sys.stdin.readline()
                         if message == "#\n":
                             print("leaving room")
                             self.send_message("leave-room",self.screen_name,self.room)
                             leave = True
+                        elif message == '*\n':
+                            print("find out whose currently in room")
+                            self.send_message("stats",self.screen_name,self.room)
                         else:
                             self.send_room_message(message)
                             print(f"You : {message}")
@@ -140,14 +146,23 @@ class Client:
             print(f"Welcome to {self.room} room.")
             print(f"Members in chat: {members}")
             print(f"Member Count: {member_count}")
+            print("Enter # to leave room and * to see current room stats")
         elif command["type"] == "join-room-reply" and command["status"] == "failed":
             print("failed to join room because room is full")
         elif command["type"] == "room-message":
             user_name = command["name"]
             user_msg = command["message"]
             if user_name != self.screen_name:
-                print("here")
+               # print("here")
                 print(f"{user_name} : {user_msg}")
+        elif command["type"] == "stats-reply":
+            members = command["members"]
+            member_count = len(members)
+        #    print(f"Welcome to {self.room} room.")
+            print(f"Members in chat: {members}")
+            print(f"Member Count: {member_count}")
+            print("Enter # to leave room and * to see current room stats")
+        
 
     def join_network(self):
         HOST = "127.0.0.1"  # The server's hostname or IP address
